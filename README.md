@@ -4,9 +4,37 @@
 
 RT-DETR(CNN-Transformer 하이브리드 객체검출기)·XAI(Grad-CAM++/AttnLRP/Visual Precision Search)·표현 기하 해석·반도체 결함검출 지식을
 담은 **markdown LLM Wiki** 를, **MCP(Model Context Protocol) 서버**로 노출해 AI 에이전트가 질의·갱신하고,
-사람은 **웹 GUI** 로 시각화·검색·질의하는 도구. 콘텐츠는 `WikiTool_MCP/` 루트의 실제 논문 7편(RT-DETR·Faster R-CNN·Grad-CAM++·AttnLRP·Visual Precision Search·When Models Manipulate Manifolds·Understanding Robustness Lottery)을 정독해 작성했다.
+사람은 **웹 GUI** 로 시각화·검색·질의하는 도구. 콘텐츠는 실제 논문 7편(RT-DETR·Faster R-CNN·Grad-CAM++·AttnLRP·Visual Precision Search·When Models Manipulate Manifolds·Understanding Robustness Lottery)을 정독해 작성했다.
 
 ![MVP 스크린샷](mvp/mvp_screenshot.png)
+
+> **ℹ️ 원본 논문 PDF는 저작권·용량 문제로 이 저장소에 포함하지 않습니다.** 각 위키 페이지 하단 "참고/출처"에 서지정보와 arXiv/DOI를 인용했습니다. 로컬에서 PDF 기반 재현이 필요하면 `WikiTool_MCP/` 루트에 7편 PDF를 직접 두면 됩니다(`.gitignore`로 제외됨).
+
+---
+
+## 0. Quick Start (사용 방법 요약)
+
+```powershell
+# 1) 의존성 설치 (Windows: python 별칭이 깨졌으면 py 런처 사용)
+py -m pip install -r requirements.txt
+
+# 2-A) 웹 GUI(MVP) 실행 — 사람이 보는 화면
+py server/app.py
+#   → 브라우저에서 http://127.0.0.1:5000 접속 (검색·페이지 뷰·챗봇)
+
+# 2-B) MCP 서버 실행 — AI 에이전트(Claude Desktop/Code 등)가 붙는 대상
+py server/mcp_server.py            # stdio (MCP 클라이언트가 자식 프로세스로 구동)
+py server/mcp_server.py --http     # HTTP: http://127.0.0.1:8000/mcp
+
+# 3) 동작 점검(스모크 테스트) — LLM/네트워크 불필요
+py server/wiki_core.py             # 통계 + 'rt-detr xai' 검색 결과 출력
+```
+
+- **사람**: `app.py`(Flask) → 사이드바에서 페이지 열람, 상단 검색, 우측 챗봇(읽기 전용 retrieval) 질의.
+- **AI 에이전트**: `mcp_server.py`가 6개 MCP 툴(`wiki_search/get/list` = 읽기, `wiki_create/update/append` = 쓰기)을 노출. 자세한 연결 예시는 [6.5절](#65-mcp-클라이언트-연결-예-claude-desktop-mcpservers).
+- 두 진입점은 같은 `server/wiki_core.py`를 공유하므로 **에이전트가 쓰면 GUI에도 즉시 반영**됩니다.
+
+상세 환경·설치·MCP 클라이언트 설정은 [6절](#6-실행-방법-환경--의존성)을 참고하세요.
 
 ---
 
