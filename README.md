@@ -16,7 +16,7 @@
 |---|---|---|
 | **하네스** | `RULES.md` `CLAUDE.md` `.claude/` | Agent 운영지침 + PostToolUse **Hook**(쓰기 후 자동 스키마 검증) + **Skill**(`/new-wiki-page` 자료 통합 절차) + **Subagent**(`wiki-editor`) |
 | **LLM Wiki** | `raw/` `wiki/` | 자료 투입구(raw) · 위키 본체(pages 11 + glossary 3) · 스키마(`wiki/SCHEMA.md`) · 에이전트 안내(`wiki/AGENTS.md`, `llms.txt`) |
-| **시각화 도구** | `tools/` | `mcp_server.py`(MCP 6툴, 에이전트 접근) + `app.py`(웹 뷰어·검색·챗봇) + `wiki_core.py`(공유 로직·검증 게이트) |
+| **시각화 도구** | `tools/` | `mcp_server.py`(MCP 6툴, 에이전트 접근) + `app.py`(웹 뷰어·검색·챗봇) + `wiki_core.py`(공유 로직·검증 게이트) + `scholar_search.py`(다중 학술 DB 검색 수집기) |
 | **데모** | `demo/` | 실제 지식베이스가 렌더링된 화면 캡처 |
 | **문서** | `docs/` | 지식 도메인 정의 · 의사결정 저널 · PRD · 에이전트 SPEC |
 
@@ -27,7 +27,7 @@ WikiTool_MCP/
 ├── .mcp.json                 ← Claude Code 가 자동 인식하는 MCP 서버 등록(프로젝트 스코프)
 ├── raw/                      ← 자료 투입구 (당신의 PDF·노트를 여기에)
 ├── wiki/                     ← 위키 본체: pages/ glossary/ _meta/ + SCHEMA.md AGENTS.md llms.txt
-├── tools/                    ← wiki_core.py(로직·검증) · mcp_server.py(MCP) · app.py(웹 뷰어)
+├── tools/                    ← wiki_core.py(로직·검증) · mcp_server.py(MCP) · app.py(웹 뷰어) · scholar_search.py(논문 검색 수집)
 ├── demo/                     ← 실사용 스크린샷
 └── docs/                     ← 설계 문서 4종
 ```
@@ -60,6 +60,10 @@ py tools/app.py
 **5–10분 | 내 자료 투입**
 
 자료 1건(논문 PDF, 메모 .md/.txt)을 `raw/` 에 복사합니다. 연습용 예시 파일도 준비되어 있습니다: `raw/example_note.md`
+
+> 💡 **자동 수집(선택)**: 자료가 없으면 주제 검색으로 후보를 모을 수 있습니다 —
+> `py tools/scholar_search.py "real-time detection transformer" --save` 가 arXiv·Crossref·OpenAlex 를
+> 동시 검색해 중복제거·교차검증 점수를 매긴 노트를 `raw/` 에 저장합니다(메타데이터·OA 링크만, 키 불필요).
 
 **10–25분 | 에이전트에게 통합 요청**
 
@@ -128,6 +132,7 @@ claude mcp add objdet-wiki -- py tools/mcp_server.py
 | 컨텍스트 | `CLAUDE.md` | Claude Code 세션에 자동 로드되는 프로젝트 지도 |
 | **Hook** | `.claude/settings.json` | Write/Edit 직후 `py tools/wiki_core.py --validate` 자동 실행 — 스키마 위반 시 exit 2 로 차단 (확률적 출력에 결정론적 게이트) |
 | **Skill** | `.claude/skills/new-wiki-page/` | 자료 투입 → 페이지 생성 → 검증 → 보고의 고정 절차 |
+| **Skill** | `.claude/skills/scholar-search/` | 주제로 다중 학술 DB 검색 → `raw/` 노트 저장 → 위키화 연계 |
 | **Subagent** | `.claude/agents/wiki-editor.md` | 대량 통합·메타 정리를 위임받는 편집 전담 에이전트(권한 명세 포함) |
 
 ## 6. 검증 방법
